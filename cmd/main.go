@@ -224,13 +224,13 @@ func InsertInvalidData(connection *pgx.Conn, data string) (err error) {
 
 // Парсинг JSON и вставка данных
 func InsertData(connection *pgx.Conn, order OrderInfo) {
+	err := InsertDataPayment(connection, order)
+	PrintError(err)
 	uid, err := InsertDataOrder(connection, order)
 	PrintError(err)
-	id, err := InsertDataDelivery(connection, order)
-	PrintError(err)
-	err = InsertDataPayment(connection, order)
-	PrintError(err)
 	err = InsertDataItems(connection, order)
+	PrintError(err)
+	id, err := InsertDataDelivery(connection, order)
 	PrintError(err)
 	err = InsertDataOrderDelivery(connection, uid, id)
 	PrintError(err)
