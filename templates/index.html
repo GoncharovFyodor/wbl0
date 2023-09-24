@@ -10,11 +10,40 @@
     Отображение данных о заказе
     </span>
 </h1>
-<form action="/result" method="post" name="OrderInfo">
+<div id="container">
     <div style="text-align:center">
-        <input type="text" placeholder="order_uid" name="order_uid" id="input_id" />
+        <input type="text" placeholder="Введите id заказа" name="order_uid" id="input_id" />
     </div>
-    <p style="text-align:center"><input type="submit" />&nbsp;</p>
-</form>
+    <p style="text-align:center"><button onclick="getDataById()">Получить данные</button></p>
+    <div id="orderData"></div>
+</div>
+    <script>
+        function getDataById() {
+            var orderUid = document.getElementById("input_id").value;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var orderData = JSON.parse(xhr.responseText);
+                        displayOrderData(orderData);
+                    } else {
+                        displayError("Ошибка при получении данных");
+                    }
+                }
+            };
+            xhr.open("GET", "/get_data?id=" + orderUid, true);
+            xhr.send();
+        }
+
+        function displayOrderData(orderData) {
+            var orderDiv = document.getElementById("orderData");
+            orderDiv.innerHTML = "<pre>" + JSON.stringify(orderData, null, 2) + "</pre>";
+        }
+
+        function displayError(errorMessage) {
+            var orderDiv = document.getElementById("orderData");
+            orderDiv.innerHTML = "<p style='color: red;'>" + errorMessage + "</p>";
+        }
+    </script>
 </body>
 </html>
