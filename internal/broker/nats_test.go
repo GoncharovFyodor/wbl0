@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 	"wbl0/internal/cache"
 	"wbl0/internal/database"
@@ -13,6 +14,10 @@ import (
 )
 
 func TestSubscribeToNATS(t *testing.T) {
+	//Добавление горутины в WaitGroup
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	//Подготовка к тестированию брокера NATS
 	//Создание экземпляра сервиса и кэша
 	db := testutils.InitTestDatabase(t)
@@ -24,13 +29,15 @@ func TestSubscribeToNATS(t *testing.T) {
 
 	//Инициализация брокера
 	InitNATS()
-	SubscribeToNATS(s)
+	SubscribeToNATS(s, &wg)
 
 	//Публикация тестового заказа в брокер
 	PublishOrderToNATS(testutils.TestOrder)
+	wg.Wait()
 
 	//Проверка сохранения данных заказа в БД и кэше
 	data, err := s.GetDataById(testutils.TestOrder.OrderUid)
+
 	assert.NoError(t, err)
 	assert.Equal(t, testutils.TestOrder, data)
 }

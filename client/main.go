@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"wbl0/internal/broker"
 	"wbl0/internal/cache"
 	"wbl0/internal/database"
@@ -12,6 +13,10 @@ import (
 )
 
 func main() {
+	//Добавление горутины в WaitGroup
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	//Инициализация БД postgres
 	db := database.InitDB("localhost", "5432", "postgres", "postgres", "wbl0")
 	defer db.Close()
@@ -41,7 +46,7 @@ func main() {
 	broker.InitNATS()
 
 	//Подписка на канал NATS для получения данных
-	broker.SubscribeToNATS(dataService)
+	broker.SubscribeToNATS(dataService, &wg)
 
 	//Обработчик http для корневого пути
 	http.Handle("/", server.NewHTTPServer(dataService))

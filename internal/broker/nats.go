@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nats-io/nats.go"
 	"log"
+	"sync"
 	"wbl0/internal/model"
 	"wbl0/internal/service"
 )
@@ -24,8 +25,9 @@ func InitNATS() {
 // Когда сообщение получено, оно декодируется из JSON в объект OrderInfo.
 // Затем данные проходят валидацию, и если они проходят проверку, они сохраняются в кэш и БД через сервис s.
 // Если происходит ошибка на любом из этапов, она регистрируется в журнале.
-func SubscribeToNATS(s *service.Service) {
+func SubscribeToNATS(s *service.Service, wg *sync.WaitGroup) {
 	Nconn.Subscribe("order_info", func(m *nats.Msg) {
+		defer wg.Done()
 		var order model.OrderInfo
 		err := json.Unmarshal(m.Data, &order)
 		if err != nil {
